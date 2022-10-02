@@ -84,53 +84,50 @@ int main() {
 		
 		// prepare stencil
 		/// @todo: generar valores diferentes en fondo, piso iluminado, sombra
-		//Habilitamos el test de stencil
+		//Habilitamos el stencil-test
 		glEnable(GL_STENCIL_TEST);
-		//Configuramos para que falle siempre y cuando falle reemplace por 1
-		glStencilFunc(GL_NEVER,1,~0);
-		glStencilOp(GL_REPLACE,GL_KEEP,GL_KEEP);
-		//"Dibujamos" el piso
-		//Donde pasaron los fragmentos del piso, se reemplazo el stencil buffer por 1
+		
+		//Configuramos para que falle siempre y definimos el ref como 1
+		glStencilFunc(GL_NEVER, 1, ~0);
+		//Cuando falle que reemplace por el ref
+		glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
+		//"dibujamos" los fragmentos que corresponden al piso
 		drawFloor(true);
 		
-		//Configuramos para que pasen solo los fragmentos donde el stencil es 1 (No pasen el piso)
-		glStencilFunc(GL_EQUAL,1,~0);
-		//Los fragmentos que fallen stencil, que ya no reemplacen
-		glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+		//Configuramos para que falle cuando el stencil buffer es 1
+		glStencilFunc(GL_NOTEQUAL, 1, ~0);
+		//Cuando falle incrementa de 1 a 2
+		glStencilOp(GL_INCR, GL_KEEP, GL_KEEP);
+		//Desactivamos el depth-test
+		glDepthFunc(GL_NEVER);
+		//"dibujamos" los fragmentos que corresponden a la sombra del modelo
+		drawObject(shadow);
 		
 		
 		// draw objects
 		/// @todo: seleccionar la mascara y el valor de referencia adecuado para cada objeto
-		//Desactivamos el stencil para dibujar el pollo y lo volvemos a activar
+		
+		//Primero objetos opacos
+		//Modelo normal y luz (sin stencil test y con depth test normal)
 		glDisable(GL_STENCIL_TEST);
-		drawObject(identity);
-		glEnable(GL_STENCIL_TEST);
-		
-		drawObject(reflection);
-		
-		//Configuramos el Depth Test para que falle siempre
-		glDepthFunc(GL_NEVER);
-		//Configuramos ademas para que cuando falle incremente el stencil buffer de 1 a 2
-		glStencilOp(GL_KEEP,GL_INCR,GL_KEEP);
-		//Esto va a hacer que los fragmentos de la sombra que pasen el stencil, incrementen los 1s
-		drawObject(shadow);
-		//Ademas, como solo pasan el Stencil Test donde el stencil buffer vale 1, no se pintaran dos veces la misma sombra (ponele)
-		
-		//Configuramos normalmente el Depth Test
 		glDepthFunc(GL_LESS);
-		glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-		
-		//Dibujamos el piso iluminado donde el stencil buffer vale 1 (linea 97)
-		drawFloor(true);
-		
-		//Dibujamos el piso con sombra donde el stencil buffer vale 2
-		glStencilFunc(GL_EQUAL,2,~0);
-		drawFloor(false);
-		
-		//Desactivamos el stencil para dibujar la luz
-		glDisable(GL_STENCIL_TEST);
+		drawObject(identity);
 		drawLight();
 		
+		//Reflejo (0 < stencil buffer) (Si, la sintaxis es "al reves" (horrible))
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		glStencilFunc(GL_LESS, 0, ~0);
+		drawObject(reflection);
+		
+		//Ultimo transparencias
+		//Piso iluminado (stencil buffer = 1)
+		glStencilFunc(GL_EQUAL, 1, ~0);
+		drawFloor(true);
+		
+		//Piso con sombra (stencil buffer = 2)
+		glStencilFunc(GL_EQUAL, 2, ~0);
+		drawFloor(false);
 		
 		if (show_stencil) {
 			static ShowStencil ss;
