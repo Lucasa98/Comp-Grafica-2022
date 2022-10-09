@@ -139,13 +139,13 @@ glm::vec3 warpPoint(const Delaunay &delaunay0, const Delaunay &delaunay1, glm::v
 	Triangulo T = (delaunay0.getTriangulos())[iT];			//el triangulo
 	
 	//Obtener los vertices del triangulo y calcular los pesos de esos vertices sobre p
-	vector<glm::vec3> v = delaunay0.getPuntos();			//vector con todos los vertices
+	const vector<glm::vec3>& v = delaunay0.getPuntos();			//vector con todos los vertices
 	Pesos pesos = calcularPesos(v[T[0]],v[T[1]],v[T[2]],p);
 	//T[i] devuelve el indice del vertice i de T en el vector "global" de vertices
 	
 	//Aplicando esos mismos pesos a los mismos vertices pero modificados (delaunay1),
 	//nos deberia dar la nueva coordenada para p
-	vector<glm::vec3> vmod = delaunay1.getPuntos();			//vector con los vertices modificados
+	const vector<glm::vec3>& vmod = delaunay1.getPuntos();			//vector con los vertices modificados
 	p.x = pesos[0]*vmod[T[0]].x + pesos[1]*vmod[T[1]].x + pesos[2]*vmod[T[2]].x;	//Mismos indices para obtener los vertices nuevos
 	p.y = pesos[0]*vmod[T[0]].y + pesos[1]*vmod[T[1]].y + pesos[2]*vmod[T[2]].y;
 	

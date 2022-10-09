@@ -19,7 +19,7 @@ current_source=main.cpp
 path_char=\
 [source]
 path=main.cpp
-cursor=138:64
+cursor=141:7
 open=true
 [source]
 path=utils.cpp
