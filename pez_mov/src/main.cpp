@@ -26,7 +26,7 @@ Spline spline( { {-1.f,0.f,0.f}, {0.f,0.f,-1.f}, {1.f,0.f,0.f}, {0.f,0.f,1.f} } 
 
 void updateControlPointsAround(Spline &spline, int ctrl_pt) {
 	/// @todo: actualizar los puntos anterior y posterior a ctrl_pt
-	
+#if 1
 	//Obtener los ptos de ctrol interpolantes anterior y siguiente
 	const glm::vec3& ptoAnt = spline.getControlPoint(ctrl_pt-3);
 	const glm::vec3& ptoSig = spline.getControlPoint(ctrl_pt+3);
@@ -49,7 +49,31 @@ void updateControlPointsAround(Spline &spline, int ctrl_pt) {
 	//Definir los ptos de control no interpolantes
 	spline.setControlPoint(ctrl_pt-1, p - dP/3.f);
 	spline.setControlPoint(ctrl_pt+1, p + dP/3.f);
+#else
 	
+	///OVERHAUSSER
+	//Puntos
+	glm::vec3 p = spline.getControlPoint(ctrl_pt);
+	glm::vec3 ant = spline.getControlPoint(ctrl_pt-2);
+	glm::vec3 sig = spline.getControlPoint(ctrl_pt+2);
+	
+	//Segmentos
+	glm::vec3 segAnt = p-ant;
+	glm::vec3 segSig = sig-p;
+	//Terminos de reparametrización
+	float distAnt = length(segAnt);
+	float distSig = length(segSig);
+	
+	//Calcular ptos de control no interpolantes
+	glm::vec3 v = ((distSig/distAnt)*segAnt + (distAnt/distSig)*segSig) / (distSig+distAnt);
+	
+	//Para tener continuidad parametrica
+	float distMin = min(distAnt,distSig);
+	
+	spline.setControlPoint(ctrl_pt-1, p - (distMin/3.f) * v);
+	spline.setControlPoint(ctrl_pt+1, p + (distMin/3.f) * v);
+	
+#endif
 	
 }
 
