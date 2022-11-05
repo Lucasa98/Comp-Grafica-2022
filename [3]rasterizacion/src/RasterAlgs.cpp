@@ -35,9 +35,11 @@ void drawSegment(paintPixelFunction paintPixel, glm::vec2 p0, glm::vec2 p1) {
 	}
 }
 
+#if 1
+
 /*
-	paintPixel dibuja el pixel en la coordenada
-	evalCurve es una funcion paramétrica que devuelve una coordenada 2d
+paintPixel dibuja el pixel en la coordenada
+evalCurve es una funcion paramétrica que devuelve una coordenada 2d
 */
 void drawCurve(paintPixelFunction paintPixel, curveEvalFunction evalCurve) {
 	/// @todo: implementar algun algoritmo de rasterizacion de curvas
@@ -49,10 +51,10 @@ void drawCurve(paintPixelFunction paintPixel, curveEvalFunction evalCurve) {
 	bool pintar = true;
 	
 	/*
-		t: parametro que recibe la funcion parametrica de la curva, devuelve un par <punto, derivada>
-		t = [0.0, 1.0]
-		t=0.0 punto inicial
-		t=1.0 punto final
+	t: parametro que recibe la funcion parametrica de la curva, devuelve un par <punto, derivada>
+	t = [0.0, 1.0]
+	t=0.0 punto inicial
+	t=1.0 punto final
 	*/
 	while(t <= 1.f){
 		
@@ -102,3 +104,36 @@ void drawCurve(paintPixelFunction paintPixel, curveEvalFunction evalCurve) {
 		t = t2;
 	}
 }
+
+#else
+
+///Subdivision (corregir)
+void drawCurve(paintPixelFunction paintPixel, curveEvalFunction evalCurve, float t0, float t1){
+	//Punto medio de la secante
+	glm::vec2 secMed = (evalCurve(t0).p + evalCurve(t1).p) * 0.5f;
+	
+	//Punto medio de la curva
+	float tmed = (t0+t1)/2.f;
+	glm::vec2 curveMed = evalCurve(tmed).p;
+	
+	glm::vec2 secm= normalize(evalCurve(t1).p - evalCurve(t0).p);
+	glm::vec2 tmedm= normalize(evalCurve(tmed).d);
+	//Ver si es lo suficientemente copada(la distancia entre los puntos medio es menor a 1 y la pendiente en tmed es parecida a la pendiente de la secante)
+	if(dot(secm,tmedm) < 0.9f){
+		drawCurve(paintPixel, evalCurve, t0, tmed);
+		drawCurve(paintPixel, evalCurve, tmed, t1);
+	}else if(distance(secMed, curveMed) >= 1){
+		drawCurve(paintPixel, evalCurve, t0, tmed);
+		drawCurve(paintPixel, evalCurve, tmed, t1);
+	}else{
+		drawSegment(paintPixel, evalCurve(t0).p, evalCurve(t1).p);
+	}
+}
+	
+	//Wrapper para subdivision
+	void drawCurve(paintPixelFunction paintPixel, curveEvalFunction evalCurve) {
+		drawCurve(paintPixel, evalCurve, 0.f, 1.f);
+	}
+	
+#endif
+	

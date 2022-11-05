@@ -27,7 +27,7 @@ path=Renderer.cpp
 cursor=39:0
 [source]
 path=RasterAlgs.cpp
-cursor=20:0
+cursor=38:0
 open=true
 [source]
 path=..\common\utils\Model.cpp
