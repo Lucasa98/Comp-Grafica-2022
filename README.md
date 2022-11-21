@@ -6,7 +6,5 @@ Bibliotecas:
 - glm
 - GLFW
 - ImGUI
-- flad
-- stb_image
 
 IDE: Zinjai
